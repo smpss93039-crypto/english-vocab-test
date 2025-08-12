@@ -32,8 +32,8 @@ if "question" not in st.session_state:
     st.session_state.score = 0
     st.session_state.total = 0
     st.session_state.show_next_button = False
-    st.session_state.phonetic = ""   # 這裡新增
-    st.session_state.example = ""    # 這裡新增
+    st.session_state.phonetic = ""   # 加上這兩行初始化
+    st.session_state.example = ""
 
 
 def new_question():
