@@ -15,7 +15,7 @@ st.markdown("""
 # 讀取雲端 CSV
 CSV_URL = "https://drive.google.com/uc?export=download&id=13uFgMOeJUGgnd6GS9xBYUAfulSkRLtID"
 
-@st.cache_data
+#@st.cache_data
 def load_data():
     df = pd.read_csv(CSV_URL)
     return df
@@ -79,3 +79,4 @@ else:
         new_question()
 
 st.write(f"得分：{st.session_state.score} / {st.session_state.total}")
+st.write("版本測試：2025-08-12 15:50")
