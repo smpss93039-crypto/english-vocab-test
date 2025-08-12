@@ -32,6 +32,9 @@ if "question" not in st.session_state:
     st.session_state.score = 0
     st.session_state.total = 0
     st.session_state.show_next_button = False
+    st.session_state.phonetic = ""   # 這裡新增
+    st.session_state.example = ""    # 這裡新增
+
 
 def new_question():
     row = data.sample(1).iloc[0]
