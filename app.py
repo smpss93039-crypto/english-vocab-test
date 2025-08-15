@@ -125,7 +125,7 @@ def check_answer(ans):
         st.session_state.score += 1
         st.success("Correct!")
     else:
-        st.error(f"答錯了！正確答案是：{current_word} {st.session_state.correct}")
+        st.error(f"Wrong！{current_word} means {st.session_state.correct}")
     new_question()
 
 # ====== 首頁：選擇使用者 ======
