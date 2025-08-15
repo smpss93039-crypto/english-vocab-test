@@ -61,16 +61,17 @@ st.markdown("""
 if "user" not in st.session_state:
     st.session_state.user = None
 
+def select_user(user_name):
+    st.session_state.user = user_name
+    st.experimental_rerun()  # 只有在按鈕回調裡才呼叫
+
 if st.session_state.user is None:
     st.markdown("<h2 style='font-family: Times New Roman; text-align:center;'>請選擇使用者</h2>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
-    if st.button("Alex", key="alex_btn"):
-        st.session_state.user = "Alex"
-        st.experimental_rerun()  # 點擊後立即進入題目頁
-    if st.button("Eveline", key="eve_btn"):
-        st.session_state.user = "Eveline"
-        st.experimental_rerun()  # 點擊後立即進入題目頁
+    st.button("Alex", key="alex_btn", on_click=select_user, args=("Alex",))
+    st.button("Eveline", key="eve_btn", on_click=select_user, args=("Eveline",))
+
 
 # ====== Google Sheet 設定 ======
 if st.session_state.user:
