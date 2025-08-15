@@ -13,23 +13,39 @@ st.markdown("""
         font-family: "宋体", "SimSun", "Times New Roman", serif;
     }
 
+    .title-box {
+        border: 2px solid #444;
+        padding: 10px;
+        font-size: 24px;  /* 標題小三級 */
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+
     .word {
         font-size: 36px;
         font-weight: bold;
         font-family: "Times New Roman", serif;
+        margin-bottom: 5px;
     }
     .phonetic {
         font-size: 20px;
         color: gray;
         font-family: "Times New Roman", serif;
+        margin-bottom: 10px;
     }
     .example {
         font-size: 28px;
         color: #444;
         font-family: "宋体", "SimSun", serif;
+        margin-bottom: 15px;
+    }
+    .option {
+        margin-bottom: 5px;
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # ====== Google Sheet 設定 ======
@@ -91,12 +107,14 @@ if st.session_state.question is None:
     new_question()
 
 # ====== UI 顯示 ======
-st.title("IELTS Vocabulary Test")
+st.markdown(f"<div class='title-box'>IELTS Vocabulary Test</div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 st.markdown(f"<div class='word'>{st.session_state.question}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
 
+st.markdown("<br>", unsafe_allow_html=True)  # 選項前空行
 for opt in st.session_state.options:
     st.button(opt, on_click=check_answer, args=(opt,))
 
