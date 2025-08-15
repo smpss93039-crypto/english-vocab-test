@@ -39,9 +39,10 @@ CSV_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:cs
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(CSV_URL, encoding="utf-8-sig")
+    df = pd.read_csv(CSV_URL, encoding="utf-8", errors="ignore")
     df.fillna("", inplace=True)
     return df
+
 
 data = load_data()
 
