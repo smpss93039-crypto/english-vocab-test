@@ -80,9 +80,9 @@ def check_answer(ans):
     current_word = st.session_state.question
     if ans == st.session_state.correct:
         st.session_state.score += 1
-        st.success("答對了！")
+        st.success("Correct!")
     else:
-        st.error(f"答錯了！單字：{current_word} 正確答案是：{st.session_state.correct}")
+        st.error(f"Wrong, The word," " {current_word}, means " " {st.session_state.correct}")
     new_question()
 
 
@@ -91,7 +91,7 @@ if st.session_state.question is None:
     new_question()
 
 # ====== UI 顯示 ======
-st.title("📚 英文單字測驗")
+st.title("IELTS Vocabulary Test")
 
 st.markdown(f"<div class='word'>{st.session_state.question}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
@@ -100,4 +100,4 @@ st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_all
 for opt in st.session_state.options:
     st.button(opt, on_click=check_answer, args=(opt,))
 
-st.write(f"得分：{st.session_state.score} / {st.session_state.total}")
+st.write(f"Score：{st.session_state.score} / {st.session_state.total}")
