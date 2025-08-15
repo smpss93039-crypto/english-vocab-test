@@ -3,6 +3,8 @@ import pandas as pd
 import random
 import requests
 import io
+from gtts import gTTS
+import base64
 
 # ====== Google Fonts & CSS ======
 st.markdown("""
@@ -14,7 +16,7 @@ st.markdown("""
     }
 
     .user-btn {
-        font-size: 36px;  /* 比題目大三級 */
+        font-size: 36px;
         font-family: "Times New Roman", serif;
         border: 2px solid #444;
         padding: 15px;
@@ -28,7 +30,7 @@ st.markdown("""
     .title-box {
         border: 2px solid #444;
         padding: 10px;
-        font-size: 24px;  /* 標題小三級 */
+        font-size: 24px;
         font-weight: bold;
         display: inline-block;
         margin-bottom: 15px;
@@ -51,9 +53,6 @@ st.markdown("""
         color: #444;
         font-family: "宋体", "SimSun", serif;
         margin-bottom: 15px;
-    }
-    .option {
-        margin-bottom: 5px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -83,17 +82,21 @@ if "question" not in st.session_state:
     st.session_state.total = 0
     st.session_state.phonetic = ""
     st.session_state.example = ""
+    st.session_state.used_words = []
 
 # ====== 選擇使用者 ======
 def select_user(user_name):
     st.session_state.user = user_name
     st.session_state.data = load_data(user_name)
-    # 立即生成第一題
     new_question()
 
 # ====== 產生新題目 ======
 def new_question():
-    row = st.session_state.data.sample(1).iloc[0]
+    available = st.session_state.data[~st.session_state.data["english"].isin(st.session_state.used_words)]
+    if available.empty:
+        st.info("已答完全部題目！")
+        return
+    row = available.sample(1).iloc[0]
     word = row["english"]
     phonetic = row.get("phonetic", "")
     example = row.get("example", "")
@@ -107,6 +110,15 @@ def new_question():
     st.session_state.example = example
     st.session_state.correct = correct
     st.session_state.options = options
+    st.session_state.used_words.append(word)
+
+# ====== 播放語音 ======
+def play_audio(text):
+    tts = gTTS(text=text, lang='en')
+    tts.save("temp.mp3")
+    audio_file = open("temp.mp3", "rb")
+    audio_bytes = audio_file.read()
+    st.audio(audio_bytes, format="audio/mp3")
 
 # ====== 檢查答案 ======
 def check_answer(ans):
@@ -134,7 +146,10 @@ else:
     st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)  # 選項前空行
+    # 播放單字發音
+    play_audio(st.session_state.question)
+
+    st.markdown("<br>", unsafe_allow_html=True)
     for opt in st.session_state.options:
         st.button(opt, on_click=check_answer, args=(opt,))
 
