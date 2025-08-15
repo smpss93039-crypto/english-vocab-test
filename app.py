@@ -7,25 +7,30 @@ import io
 # ====== Google Fonts & CSS ======
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
 
     html, body, [class*="css"] {
-        font-family: 'Playfair Display', serif;
+        font-family: "宋体", "SimSun", "Times New Roman", serif;
     }
+
     .word {
-        font-size: 36px; /* 單字大小 */
+        font-size: 36px;
         font-weight: bold;
+        font-family: "Times New Roman", serif;
     }
     .phonetic {
-        font-size: 18px; /* 拼音大小，比單字小三級 */
+        font-size: 20px;
         color: gray;
+        font-family: "Times New Roman", serif;
     }
     .example {
-        font-size: 28px; /* 例句大小，比單字小一級 */
+        font-size: 28px;
         color: #444;
+        font-family: "宋体", "SimSun", serif;
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 # ====== Google Sheet 設定 ======
 SHEET_ID = "1fu6Lm3J54fo-hYOXmoYwHtylNSKIH8rDd6Syvpc9wuA"
@@ -71,12 +76,15 @@ def new_question():
 # ====== 檢查答案 ======
 def check_answer(ans):
     st.session_state.total += 1
+    # 將按鈕對應的單字存在變數
+    current_word = st.session_state.question
     if ans == st.session_state.correct:
         st.session_state.score += 1
         st.success("答對了！")
     else:
-        st.error(f"答錯了！正確答案是：{st.session_state.correct}")
-    new_question()  # 按一次就跳下一題
+        st.error(f"答錯了！單字：{current_word} 正確答案是：{st.session_state.correct}")
+    new_question()
+
 
 # ====== 首次題目 ======
 if st.session_state.question is None:
