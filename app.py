@@ -3,7 +3,6 @@ import pandas as pd
 import random
 import requests
 import io
-from urllib.parse import quote
 
 # ====== Google Fonts & CSS ======
 st.markdown("""
@@ -129,16 +128,6 @@ def check_answer(ans):
         st.error(f"答錯了！正確答案是：{current_word} {st.session_state.correct}")
     new_question()
 
-# ====== 播放單字發音 ======
-def play_pronunciation(word):
-    tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={quote(word)}&tl=en&client=tw-ob"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(tts_url, headers=headers)
-    if response.status_code == 200:
-        st.audio(io.BytesIO(response.content), format="audio/mp3")
-    else:
-        st.error("無法播放發音，請稍後再試。")
-
 # ====== 首頁：選擇使用者 ======
 if st.session_state.user is None:
     st.markdown("<h2 style='font-family: Times New Roman; text-align:center;'>Select User</h2>", unsafe_allow_html=True)
@@ -153,9 +142,6 @@ else:
     st.markdown(f"<div class='word'>{st.session_state.question}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
-
-    # 播放發音按鈕
-    st.button("🔊 聽發音", on_click=lambda: play_pronunciation(st.session_state.question))
 
     st.markdown("<br>", unsafe_allow_html=True)
     for opt in st.session_state.options:
