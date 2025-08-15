@@ -1,8 +1,14 @@
 import gspread
-import pandas as pd
-import streamlit as st
-import random
 from oauth2client.service_account import ServiceAccountCredentials
+import json
+import streamlit as st
+
+scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/drive']
+
+creds_dict = st.secrets["gspread"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+client = gspread.authorize(creds)
+
 
 # ====== Google Fonts ======
 st.markdown("""
