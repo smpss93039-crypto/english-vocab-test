@@ -3,7 +3,7 @@ import pandas as pd
 import random
 import requests
 import io
-from gtts import gTTS
+from urllib.parse import quote
 
 # ====== Google Fonts & CSS ======
 st.markdown("""
@@ -15,7 +15,7 @@ st.markdown("""
     }
 
     .user-btn {
-        font-size: 36px;
+        font-size: 36px;  /* 比題目大三級 */
         font-family: "Times New Roman", serif;
         border: 2px solid #444;
         padding: 15px;
@@ -29,7 +29,7 @@ st.markdown("""
     .title-box {
         border: 2px solid #444;
         padding: 10px;
-        font-size: 24px;
+        font-size: 24px;  /* 標題小三級 */
         font-weight: bold;
         display: inline-block;
         margin-bottom: 15px;
@@ -61,6 +61,7 @@ st.markdown("""
 
 # ====== Google Sheet 設定 ======
 SHEET_ID = "1fu6Lm3J54fo-hYOXmoYwHtylNSKIH8rDd6Syvpc9wuA"
+
 def get_csv_url(sheet_name):
     return f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
@@ -75,10 +76,6 @@ def load_data(sheet_name):
 # ====== 初始化 session state ======
 if "user" not in st.session_state:
     st.session_state.user = None
-if "data" not in st.session_state:
-    st.session_state.data = None
-if "remaining_indices" not in st.session_state:
-    st.session_state.remaining_indices = []
 if "question" not in st.session_state:
     st.session_state.question = None
     st.session_state.correct = None
@@ -87,27 +84,32 @@ if "question" not in st.session_state:
     st.session_state.total = 0
     st.session_state.phonetic = ""
     st.session_state.example = ""
+if "asked_indices" not in st.session_state:
+    st.session_state.asked_indices = set()
 
 # ====== 選擇使用者 ======
 def select_user(user_name):
     st.session_state.user = user_name
     st.session_state.data = load_data(user_name)
-    st.session_state.remaining_indices = list(st.session_state.data.index)
+    st.session_state.asked_indices = set()
     new_question()
 
-# ====== 產生新題目 ======
+# ====== 產生新題目（不重複） ======
 def new_question():
-    if not st.session_state.remaining_indices:
-        st.info("已完成所有題目！")
+    df = st.session_state.data
+    remaining_indices = list(set(df.index) - st.session_state.asked_indices)
+    if not remaining_indices:
+        st.success("已完成所有題目！")
         return
-    idx = random.choice(st.session_state.remaining_indices)
-    st.session_state.remaining_indices.remove(idx)
-    row = st.session_state.data.loc[idx]
+    idx = random.choice(remaining_indices)
+    st.session_state.asked_indices.add(idx)
+
+    row = df.loc[idx]
     word = row["english"]
     phonetic = row.get("phonetic", "")
     example = row.get("example", "")
     correct = row["chinese"]
-    wrong = st.session_state.data[st.session_state.data["chinese"] != correct]["chinese"].sample(3).tolist()
+    wrong = df[df["chinese"] != correct]["chinese"].sample(3).tolist()
     options = wrong + [correct]
     random.shuffle(options)
 
@@ -128,13 +130,10 @@ def check_answer(ans):
         st.error(f"答錯了！正確答案是：{current_word} {st.session_state.correct}")
     new_question()
 
-# ====== 播放語音 ======
+# ====== 播放單字發音 ======
 def play_pronunciation(word):
-    tts = gTTS(word, lang='en')
-    audio_bytes = io.BytesIO()
-    tts.write_to_fp(audio_bytes)
-    audio_bytes.seek(0)
-    st.audio(audio_bytes, format='audio/mp3')
+    url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={quote(word)}&tl=en&client=tw-ob"
+    st.audio(url, format='audio/mp3')
 
 # ====== 首頁：選擇使用者 ======
 if st.session_state.user is None:
@@ -151,7 +150,8 @@ else:
     st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
 
-    play_pronunciation(st.session_state.question)
+    # 播放語音按鈕
+    st.button("🔊 聽發音", on_click=lambda: play_pronunciation(st.session_state.question))
 
     st.markdown("<br>", unsafe_allow_html=True)  # 選項前空行
     for opt in st.session_state.options:
