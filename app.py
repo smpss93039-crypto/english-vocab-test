@@ -98,7 +98,7 @@ def check_answer(ans):
         st.session_state.score += 1
         st.success("Correct!")
     else:
-        st.error(f"Wrong, The word," " {current_word}, means " " {st.session_state.correct}")
+        st.error(f"Wrong, The word, {current_word}, means {st.session_state.correct}")
     new_question()
 
 
