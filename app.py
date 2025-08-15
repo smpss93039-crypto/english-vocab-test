@@ -4,7 +4,6 @@ import random
 import requests
 import io
 from gtts import gTTS
-import base64
 
 # ====== Google Fonts & CSS ======
 st.markdown("""
@@ -54,12 +53,14 @@ st.markdown("""
         font-family: "宋体", "SimSun", serif;
         margin-bottom: 15px;
     }
+    .option {
+        margin-bottom: 5px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ====== Google Sheet 設定 ======
 SHEET_ID = "1fu6Lm3J54fo-hYOXmoYwHtylNSKIH8rDd6Syvpc9wuA"
-
 def get_csv_url(sheet_name):
     return f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
 
@@ -74,6 +75,10 @@ def load_data(sheet_name):
 # ====== 初始化 session state ======
 if "user" not in st.session_state:
     st.session_state.user = None
+if "data" not in st.session_state:
+    st.session_state.data = None
+if "remaining_indices" not in st.session_state:
+    st.session_state.remaining_indices = []
 if "question" not in st.session_state:
     st.session_state.question = None
     st.session_state.correct = None
@@ -82,21 +87,22 @@ if "question" not in st.session_state:
     st.session_state.total = 0
     st.session_state.phonetic = ""
     st.session_state.example = ""
-    st.session_state.used_words = []
 
 # ====== 選擇使用者 ======
 def select_user(user_name):
     st.session_state.user = user_name
     st.session_state.data = load_data(user_name)
+    st.session_state.remaining_indices = list(st.session_state.data.index)
     new_question()
 
 # ====== 產生新題目 ======
 def new_question():
-    available = st.session_state.data[~st.session_state.data["english"].isin(st.session_state.used_words)]
-    if available.empty:
-        st.info("已答完全部題目！")
+    if not st.session_state.remaining_indices:
+        st.info("已完成所有題目！")
         return
-    row = available.sample(1).iloc[0]
+    idx = random.choice(st.session_state.remaining_indices)
+    st.session_state.remaining_indices.remove(idx)
+    row = st.session_state.data.loc[idx]
     word = row["english"]
     phonetic = row.get("phonetic", "")
     example = row.get("example", "")
@@ -110,15 +116,6 @@ def new_question():
     st.session_state.example = example
     st.session_state.correct = correct
     st.session_state.options = options
-    st.session_state.used_words.append(word)
-
-# ====== 播放語音 ======
-def play_audio(text):
-    tts = gTTS(text=text, lang='en')
-    tts.save("temp.mp3")
-    audio_file = open("temp.mp3", "rb")
-    audio_bytes = audio_file.read()
-    st.audio(audio_bytes, format="audio/mp3")
 
 # ====== 檢查答案 ======
 def check_answer(ans):
@@ -130,6 +127,14 @@ def check_answer(ans):
     else:
         st.error(f"答錯了！正確答案是：{current_word} {st.session_state.correct}")
     new_question()
+
+# ====== 播放語音 ======
+def play_pronunciation(word):
+    tts = gTTS(word, lang='en')
+    audio_bytes = io.BytesIO()
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)
+    st.audio(audio_bytes, format='audio/mp3')
 
 # ====== 首頁：選擇使用者 ======
 if st.session_state.user is None:
@@ -146,10 +151,9 @@ else:
     st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
 
-    # 播放單字發音
-    play_audio(st.session_state.question)
+    play_pronunciation(st.session_state.question)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)  # 選項前空行
     for opt in st.session_state.options:
         st.button(opt, on_click=check_answer, args=(opt,))
 
