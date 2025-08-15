@@ -22,6 +22,21 @@ st.markdown("""
         margin-bottom: 15px;
     }
 
+    .user-select {
+        font-family: "Times New Roman", serif;
+        font-size: 32px;  /* 大三級 */
+        font-weight: bold;
+        border: 2px solid #444;
+        width: 120px;
+        height: 120px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px;
+        cursor: pointer;
+        text-align: center;
+    }
+
     .word {
         font-size: 36px;
         font-weight: bold;
@@ -56,20 +71,20 @@ def load_data(sheet_name):
     df = pd.read_csv(io.StringIO(r.text))
     return df
 
-# ====== 初始化 session state ======
+# ====== 選擇使用者 ======
 if "user" not in st.session_state:
     st.session_state.user = None
 
 if st.session_state.user is None:
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("Alex"):
+        if st.button("Alex", key="alex"):
             st.session_state.user = "Alex"
     with col2:
-        if st.button("Eveline"):
+        if st.button("Eveline", key="eveline"):
             st.session_state.user = "Eveline"
 
-# 選擇使用者後，載入對應工作表
+# ====== 使用者選擇後載入題目 ======
 if st.session_state.user is not None:
     SHEET_NAME = st.session_state.user
     data = load_data(SHEET_NAME)
