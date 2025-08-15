@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
 import random
+import requests
+import io
 
-# ====== Google Fonts ======
+# ====== Google Fonts & CSS ======
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap');
@@ -15,11 +17,11 @@ st.markdown("""
         font-weight: bold;
     }
     .phonetic {
-        font-size: 20px; /* 拼音大小 */
+        font-size: 18px; /* 拼音大小，比單字小三級 */
         color: gray;
     }
     .example {
-        font-size: 28px; /* 例句大小 */
+        font-size: 28px; /* 例句大小，比單字小一級 */
         color: #444;
     }
     </style>
@@ -32,7 +34,9 @@ CSV_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:cs
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv(CSV_URL)
+    r = requests.get(CSV_URL)
+    r.encoding = 'utf-8-sig'  # 避免 Unicode 問題
+    df = pd.read_csv(io.StringIO(r.text))
     return df
 
 data = load_data()
@@ -72,7 +76,7 @@ def check_answer(ans):
         st.success("答對了！")
     else:
         st.error(f"答錯了！正確答案是：{st.session_state.correct}")
-    new_question()  # 答錯也直接換下一題
+    new_question()  # 按一次就跳下一題
 
 # ====== 首次題目 ======
 if st.session_state.question is None:
