@@ -121,7 +121,7 @@ def check_answer(ans):
 
 # ====== 首頁：選擇使用者 ======
 if st.session_state.user is None:
-    st.markdown("<h2 style='font-family: Times New Roman; text-align:center;'>請選擇使用者</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='font-family: Times New Roman; text-align:center;'>Select User</h2>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.button("Alex", key="alex_btn", on_click=lambda: select_user("Alex"))
     st.button("Eveline", key="eve_btn", on_click=lambda: select_user("Eveline"))
