@@ -84,25 +84,24 @@ if "question" not in st.session_state:
     st.session_state.total = 0
     st.session_state.phonetic = ""
     st.session_state.example = ""
-if "asked_indices" not in st.session_state:
-    st.session_state.asked_indices = set()
+    st.session_state.used_indices = set()  # 已出現題目索引
 
 # ====== 選擇使用者 ======
 def select_user(user_name):
     st.session_state.user = user_name
     st.session_state.data = load_data(user_name)
-    st.session_state.asked_indices = set()
+    st.session_state.used_indices = set()  # 重置題目
     new_question()
 
 # ====== 產生新題目（不重複） ======
 def new_question():
     df = st.session_state.data
-    remaining_indices = list(set(df.index) - st.session_state.asked_indices)
-    if not remaining_indices:
+    available_indices = set(df.index) - st.session_state.used_indices
+    if not available_indices:
         st.success("已完成所有題目！")
         return
-    idx = random.choice(remaining_indices)
-    st.session_state.asked_indices.add(idx)
+    idx = random.choice(list(available_indices))
+    st.session_state.used_indices.add(idx)
 
     row = df.loc[idx]
     word = row["english"]
@@ -132,8 +131,13 @@ def check_answer(ans):
 
 # ====== 播放單字發音 ======
 def play_pronunciation(word):
-    url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={quote(word)}&tl=en&client=tw-ob"
-    st.audio(url, format='audio/mp3')
+    tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={quote(word)}&tl=en&client=tw-ob"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(tts_url, headers=headers)
+    if response.status_code == 200:
+        st.audio(io.BytesIO(response.content), format="audio/mp3")
+    else:
+        st.error("無法播放發音，請稍後再試。")
 
 # ====== 首頁：選擇使用者 ======
 if st.session_state.user is None:
@@ -150,10 +154,10 @@ else:
     st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
 
-    # 播放語音按鈕
+    # 播放發音按鈕
     st.button("🔊 聽發音", on_click=lambda: play_pronunciation(st.session_state.question))
 
-    st.markdown("<br>", unsafe_allow_html=True)  # 選項前空行
+    st.markdown("<br>", unsafe_allow_html=True)
     for opt in st.session_state.options:
         st.button(opt, on_click=check_answer, args=(opt,))
 
