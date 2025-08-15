@@ -13,30 +13,31 @@ st.markdown("""
         font-family: "宋体", "SimSun", "Times New Roman", serif;
     }
 
-    .title-box {
-        border: 2px solid #444;
-        padding: 10px;
-        font-size: 24px;  /* 標題小三級 */
-        font-weight: bold;
-        display: inline-block;
-        margin-bottom: 15px;
-    }
-
+    /* 選擇使用者按鈕樣式 */
     .user-select {
         font-family: "Times New Roman", serif;
-        font-size: 32px;  /* 大三級 */
+        font-size: 32px;  /* 大三號 */
         font-weight: bold;
         border: 2px solid #444;
-        width: 120px;
-        height: 120px;
+        width: 150px;
+        height: 150px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin: 10px;
+        margin: 20px;
         cursor: pointer;
         text-align: center;
     }
 
+    /* 題目區塊 */
+    .title-box {
+        border: 2px solid #444;
+        padding: 10px;
+        font-size: 24px;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
     .word {
         font-size: 36px;
         font-weight: bold;
@@ -71,20 +72,21 @@ def load_data(sheet_name):
     df = pd.read_csv(io.StringIO(r.text))
     return df
 
-# ====== 選擇使用者 ======
+# ====== 使用者選擇 ======
 if "user" not in st.session_state:
     st.session_state.user = None
 
+# 顯示選擇按鈕（只有在沒有選擇時顯示）
 if st.session_state.user is None:
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Alex", key="alex"):
-            st.session_state.user = "Alex"
-    with col2:
-        if st.button("Eveline", key="eveline"):
-            st.session_state.user = "Eveline"
+    st.markdown("<div style='text-align:center'>", unsafe_allow_html=True)
+    if st.button("Alex", key="alex"):
+        st.session_state.user = "Alex"
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    if st.button("Eveline", key="eveline"):
+        st.session_state.user = "Eveline"
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# ====== 使用者選擇後載入題目 ======
+# ====== 選擇後載入題目 ======
 if st.session_state.user is not None:
     SHEET_NAME = st.session_state.user
     data = load_data(SHEET_NAME)
@@ -131,14 +133,12 @@ if st.session_state.user is not None:
     if st.session_state.question is None:
         new_question()
 
-    # ====== UI 顯示 ======
+    # ====== 顯示題目 ======
     st.markdown(f"<div class='title-box'>IELTS Vocabulary Test ({st.session_state.user})</div>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
-
     st.markdown(f"<div class='word'>{st.session_state.question}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='phonetic'>{st.session_state.phonetic}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='example'>{st.session_state.example}</div>", unsafe_allow_html=True)
-
     st.markdown("<br>", unsafe_allow_html=True)
     for opt in st.session_state.options:
         st.button(opt, on_click=check_answer, args=(opt,))
